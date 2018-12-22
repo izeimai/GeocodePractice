@@ -6,7 +6,8 @@
     <link rel='stylesheet' type='text/css' href='sdk/map.css' />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src='sdk/tomtom.min.js'></script>
-
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
     <style>
         #map {
             height: 500px;
@@ -17,8 +18,21 @@
 
 <body>
     <div id='map'></div>
+
     <script>
 
+        // Initialize Firebase
+        var config = {
+            apiKey: "AIzaSyD1nyE-SfenxVwBoxuoL92zFCEsZb0GUqo",
+            authDomain: "studybuddy-bc331.firebaseapp.com",
+            databaseURL: "https://studybuddy-bc331.firebaseio.com",
+            projectId: "studybuddy-bc331",
+            storageBucket: "studybuddy-bc331.appspot.com",
+            messagingSenderId: "21013901811"
+        };
+
+        firebase.initializeApp(config);
+        var database = firebase.database();
 
         // I can't quite figure out how to use the TomTom search API, so I'm using geocod.io instead
 
@@ -46,7 +60,7 @@
             var phillyCoordinates = [39.9526, -75.1652];
             var pennovationCoordinates = [39.941252, -75.199540]
 
-            // Map itself
+            // Map itself uses the TomTom SDK (hence the massive /sdk directory)
             var map = tomtom.L.map('map', {
                 key: 'sYDNGj8wET1YxX9MvoISZSyPtefiwHDM',
                 basePath: '/sdk',
@@ -60,14 +74,34 @@
             var marker2 = tomtom.L.marker(pennovationCoordinates).addTo(map);
 
             // Dialog boxes visible by clicking on icon
+            userMarker.bindPopup('This is your current location');
             marker.bindPopup('This is your home');
             marker2.bindPopup('This is your class');
             // marker2.bindPopup('This is your class').openPopup(); //if you want the popup to show already without clicking
 
-        });
 
+            // Adding coffee places
+            // Alex is working on the firebase structure for the yelp results so this is pending
+            database.ref().on("child_added", function (snapshot) {
+                var snap = snapshot.val(); // store values
+                console.log(snap.placeName);
+                console.log(snap.placeCoordinates);
 
+                var marker = tomtom.L.marker(snap.placeCoordinates, {
+                    icon: tomtom.L.icon({
+                        iconUrl: 'coffee.png',
+                        iconSize: [30, 30]
+                    })
+                }).addTo(map).bindPopup(snap.placeName);
 
+                //tomtom.L.marker(snap.placeCoordinates).addTo(map);
+            }); // close snpashot
+
+        }); // close AJAX
+
+       // var queryURL2 = "https://api.tomtom.com/map/1/wms/?key=sYDNGj8wET1YxX9MvoISZSyPtefiwHDM&service=WMS&version=1.1.1&request=GetMap&bbox=1.355233,42.982261,24.980233,56.526017&srs=EPSG:4326&width=1305&height=748&layers=basic&styles=&format=image/png"
+
+       // $("#map").append(queryURL2);
 
 
     </script>
