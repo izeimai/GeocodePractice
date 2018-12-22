@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>My map</title>
+    <link rel='stylesheet' type='text/css' href='sdk/map.css' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src='sdk/tomtom.min.js'></script>
+
+    <style>
+        #map {
+            height: 500px;
+            width: 1000px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='map'></div>
+    <script>
+
+
+        // I can't quite figure out how to use the TomTom search API, so I'm using geocod.io instead
+
+        var street = "3000 Market St";
+        street = street.replace(/\s+/g, '+');  // this regex replaces spaces with + marks e.g. 3000+Market+St
+        var city = "Philadelphia";
+        var state = "PA";
+
+        var queryURL = "https://api.geocod.io/v1.3/geocode?street=" + street + "&city=" + city + "&state=" + state + "&api_key=6446f59bc5ec449c45ce44c9c4466c5f61816e1"
+
+        var userCoordinates = [];
+
+        $.ajax({
+            url: queryURL,
+            method: "GET"
+        }).then(function (response) {
+            console.log(response);
+
+            //storing latitude and longitude
+            var lat = response.results[0].location.lat; // stores latitude
+            var lng = response.results[0].location.lng; // stores longitude
+            userCoordinates = [lat, lng];
+
+            // User locations from firebase
+            var phillyCoordinates = [39.9526, -75.1652];
+            var pennovationCoordinates = [39.941252, -75.199540]
+
+            // Map itself
+            var map = tomtom.L.map('map', {
+                key: 'sYDNGj8wET1YxX9MvoISZSyPtefiwHDM',
+                basePath: '/sdk',
+                center: userCoordinates,
+                zoom: 14
+            });
+
+            // Icons on the map
+            var userMarker = tomtom.L.marker(userCoordinates).addTo(map);
+            var marker = tomtom.L.marker(phillyCoordinates).addTo(map);
+            var marker2 = tomtom.L.marker(pennovationCoordinates).addTo(map);
+
+            // Dialog boxes visible by clicking on icon
+            marker.bindPopup('This is your home');
+            marker2.bindPopup('This is your class');
+            // marker2.bindPopup('This is your class').openPopup(); //if you want the popup to show already without clicking
+
+        });
+
+
+
+
+
+    </script>
+</body>
+
+</html>
